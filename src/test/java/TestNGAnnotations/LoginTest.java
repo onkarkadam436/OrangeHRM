@@ -1,10 +1,12 @@
 package TestNGAnnotations;
+import com.aventstack.extentreports.ExtentTest;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.*;
 
+import java.io.File;
 import java.util.Objects;
 
 public class LoginTest {
@@ -50,6 +52,12 @@ public class LoginTest {
 
     @Test
     public void CheckValidLogin() throws InterruptedException {
+
+        ExtentTest test = ExtentReportManager.getInstance().createTest("Sample Test");
+        test.pass("Step 1 Passed");
+        test.pass("Step 2 Passed");
+
+
         driver.findElement(By.xpath ("//input[@Placeholder='Username']")).sendKeys(userName);
         driver.findElement(By.xpath ("//input[@Placeholder='Password']")).sendKeys(passWord);
         driver.findElement(By.cssSelector("button.orangehrm-login-button")).click();
@@ -62,14 +70,20 @@ public class LoginTest {
     }
     @Test
     public void CheckInvalidLogin() throws InterruptedException {
+
+
         driver.findElement(By.xpath ("//input[@Placeholder='Username']")).sendKeys(userName);
         driver.findElement(By.xpath ("//input[@Placeholder='Password']")).sendKeys(invalidPassword);
         driver.findElement(By.cssSelector("button.orangehrm-login-button")).click();
         Thread.sleep(5000);
         if(!Objects.equals(driver.getCurrentUrl(), loginUrl)){
             System.out.println("Logged in successfully with InValid Credentials");
+            ExtentTest test = ExtentReportManager.getInstance().createTest("Login Not Allowed with invalid credentials");
+            test.pass("Failed");
         }else{
             System.out.println("Login Failed");
+            ExtentTest test = ExtentReportManager.getInstance().createTest("Login Not Allowed with invalid credentials");
+            test.pass("Passed");
         }
     }
 
@@ -87,7 +101,21 @@ public class LoginTest {
 
     @AfterSuite
     public void setupTearDownSuite(){
-        System.out.println("Tear down the suite");
+        System.out.println("Test Suite execution has been completed...!");
+
+        String reportDirPath = "test-output/reports";
+
+        // Create report folder if not exists
+        File reportDir = new File(reportDirPath);
+        if (!reportDir.exists()) {
+            boolean created = reportDir.mkdirs();
+            System.out.println(created ? "Report folder created." : "Failed to create report folder.");
+        }
+
+        // Flush the Extent report
+        ExtentReportManager.getInstance().flush();
+        System.out.println("Extent report generated at: " + reportDirPath + "/ExtentReport.html");
+
     }
 
 }
